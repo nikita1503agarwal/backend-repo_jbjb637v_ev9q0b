@@ -1,48 +1,65 @@
 """
-Database Schemas
+Database Schemas for Dating App
 
-Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
-
-Each Pydantic model represents a collection in your database.
-Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+Each Pydantic model represents a MongoDB collection (lowercased class name).
 """
+from __future__ import annotations
+from typing import List, Optional, Literal
+from pydantic import BaseModel, Field, EmailStr
+from datetime import datetime
 
-from pydantic import BaseModel, Field
-from typing import Optional
-
-# Example schemas (replace with your own):
 
 class User(BaseModel):
-    """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
-    """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+    email: EmailStr
+    password_hash: str
+    full_name: Optional[str] = None
+    gender: Optional[Literal["male", "female", "other"]] = None
+    birthday: Optional[str] = Field(None, description="YYYY-MM-DD")
+    photos: List[str] = Field(default_factory=list)
+    bio: Optional[str] = None
+    interests: List[str] = Field(default_factory=list)
+    location: Optional[dict] = Field(None, description="{ lat: float, lng: float }")
+    show_me: Optional[Literal["male", "female", "everyone"]] = "everyone"
+    age_range: List[int] = Field(default_factory=lambda: [18, 35])
+    distance_km: int = 50
+    verified: bool = False
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
-class Product(BaseModel):
-    """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
-    """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
 
-# Add your own schemas here:
-# --------------------------------------------------
+class Profile(BaseModel):
+    user_id: str
+    username: Optional[str] = None
+    job_title: Optional[str] = None
+    company: Optional[str] = None
+    school: Optional[str] = None
+    prompts: List[dict] = Field(default_factory=list)
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+
+class Like(BaseModel):
+    liker_id: str
+    liked_id: str
+    created_at: Optional[datetime] = None
+
+
+class Match(BaseModel):
+    user_a: str
+    user_b: str
+    created_at: Optional[datetime] = None
+
+
+class Message(BaseModel):
+    match_id: str
+    sender_id: str
+    text: Optional[str] = None
+    media_url: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+
+class Report(BaseModel):
+    reporter_id: str
+    reported_id: str
+    reason: str
+    created_at: Optional[datetime] = None
